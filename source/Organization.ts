@@ -2,12 +2,12 @@ import { components } from '@octokit/openapi-types';
 import { ListModel, Stream, toggle } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
-import { githubPublic } from './client';
+import { githubClient } from './client';
 
 export type Organization = components['schemas']['organization'];
 
 export class OrganizationModel extends Stream<Organization>(ListModel) {
-    client = githubPublic;
+    client = githubClient;
     baseURI = 'orgs';
 
     async *openStream() {

@@ -3,12 +3,12 @@ import { computed, observable } from 'mobx';
 import { BaseModel, toggle } from 'mobx-restful';
 
 import { OrganizationModel } from './Organization';
-import { githubPublic } from './client';
+import { githubClient } from './client';
 
 export type User = components['schemas']['public-user'];
 
 export class UserModel extends BaseModel {
-    client = githubPublic;
+    client = githubClient;
 
     @observable
     accessor session: User | undefined;
@@ -17,10 +17,9 @@ export class UserModel extends BaseModel {
 
     @computed
     get namespaces() {
-        return [
-            this.session?.login,
-            ...this.organizationStore.allItems.map(({ login }) => login)
-        ].filter(Boolean) as string[];
+        return [this.session, ...this.organizationStore.allItems].filter(
+            Boolean
+        );
     }
 
     @toggle('downloading')

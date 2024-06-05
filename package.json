@@ -1,10 +1,17 @@
 {
     "name": "mobx-github",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "license": "LGPL-3.0-or-later",
     "author": "shiy2008@gmail.com",
-    "description": "",
-    "keywords": [],
+    "description": "MobX SDK for GitHub RESTful API, which is based on MobX-RESTful.",
+    "keywords": [
+        "mobx",
+        "sdk",
+        "github",
+        "restful",
+        "api",
+        "decorator"
+    ],
     "source": "source/index.ts",
     "types": "dist/index.d.ts",
     "module": "dist/index.esm.js",
@@ -19,9 +26,10 @@
     },
     "dependencies": {
         "@octokit/openapi-types": "^22.2.0",
-        "@types/lodash.memoize": "^4.1.9",
+        "@swc/helpers": "^0.5.11",
+        "@types/lodash": "^4.17.4",
         "koajax": "^1.1.2",
-        "lodash.memoize": "^4.1.2",
+        "lodash": "^4.17.21",
         "mobx": ">=6.11",
         "mobx-restful": ">=0.7.0-rc.0",
         "web-utility": "^4.4.0"
@@ -35,6 +43,8 @@
         "lint-staged": "^15.2.5",
         "parcel": "~2.12.0",
         "prettier": "^3.3.0",
+        "typedoc": "^0.25.13",
+        "typedoc-plugin-mdn-links": "^3.1.28",
         "typescript": "~5.4.5"
     },
     "prettier": {
@@ -55,6 +65,7 @@
     "scripts": {
         "prepare": "husky",
         "test": "lint-staged",
-        "build": "rm -rf .parcel-cache/ dist/  &&  parcel build"
+        "build": "rm -rf .parcel-cache/ dist/ docs/  &&  parcel build  &&  typedoc source/",
+        "prepublishOnly": "npm test  &&  npm run build"
     }
 }

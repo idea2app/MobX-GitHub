@@ -1,12 +1,12 @@
 import { components } from '@octokit/openapi-types';
 import { encodeBase64 } from 'koajax';
-import memoize from 'lodash.memoize';
+import { memoize } from 'lodash';
 import { Filter, ListModel, toggle } from 'mobx-restful';
 import { PickSingle, averageOf, buildURLData, makeArray } from 'web-utility';
 
 import { OrganizationModel } from './Organization';
 import { User } from './User';
-import { githubPublic } from './client';
+import { githubClient } from './client';
 
 type Repository = components['schemas']['minimal-repository'];
 export type Issue = components['schemas']['issue'];
@@ -34,7 +34,7 @@ export class RepositoryModel extends ListModel<
     GitRepository,
     RepositoryFilter
 > {
-    client = githubPublic;
+    client = githubClient;
     baseURI = '';
     indexKey = 'full_name' as const;
 
@@ -120,12 +120,13 @@ export class RepositoryModel extends ListModel<
 
             return { pageData, totalCount: public_repos };
         }
-        const { body } = await this.client.get<User>('user');
+        if (!this.totalCount) {
+            const { body } = await this.client.get<User>('user');
 
-        return {
-            pageData,
-            totalCount: body!.public_repos + (body!.total_private_repos || 0)
-        };
+            var totalCount =
+                body!.public_repos + (body!.total_private_repos || 0);
+        }
+        return { pageData, totalCount };
     }
 
     @toggle('downloading')
@@ -151,32 +152,10 @@ export class RepositoryModel extends ListModel<
             content: GitContent;
             commit: components['schemas']['commit'];
         }>(`repos/${this.owner}/${repository}/contents/${path}`, {
+            sha,
             message,
-            content: await encodeBase64(content),
-            // @ts-ignore
-            sha
+            content: await encodeBase64(content)
         });
         return body!.content;
-    }
-
-    @toggle('downloading')
-    async downloadRaw(
-        path: string,
-        repository = this.currentOne.name,
-        ref = this.currentOne.default_branch
-    ) {
-        const identity = `${this.owner}/${repository}`;
-
-        if (!ref) {
-            const { default_branch } = await this.getOne(identity);
-
-            ref = default_branch;
-        }
-        const { body } = await this.client.get<ArrayBuffer>(
-            `raw/${identity}/${ref}/${path}`,
-            {},
-            { responseType: 'arraybuffer' }
-        );
-        return body!;
     }
 }

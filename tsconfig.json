@@ -8,5 +8,12 @@
         "skipLibCheck": true,
         "lib": ["ES2023", "DOM"]
     },
-    "include": ["source/*.ts"]
+    "include": ["source/*.ts"],
+    "typedocOptions": {
+        "name": "MobX GitHub",
+        "excludeExternals": true,
+        "excludePrivate": true,
+        "readme": "./ReadMe.md",
+        "plugin": ["typedoc-plugin-mdn-links"]
+    }
 }
