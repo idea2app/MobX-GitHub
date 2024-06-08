@@ -2,18 +2,26 @@ import { components } from '@octokit/openapi-types';
 import { encodeBase64 } from 'koajax';
 import { memoize } from 'lodash';
 import { Filter, ListModel, toggle } from 'mobx-restful';
-import { PickSingle, averageOf, buildURLData, makeArray } from 'web-utility';
+import {
+    PickSingle,
+    averageOf,
+    buildURLData,
+    groupBy,
+    makeArray
+} from 'web-utility';
 
 import { OrganizationModel } from './Organization';
 import { User } from './User';
 import { githubClient } from './client';
 
 type Repository = components['schemas']['minimal-repository'];
+export type Contributor = components['schemas']['contributor'];
 export type Issue = components['schemas']['issue'];
 
 export interface GitRepository extends Repository {
-    issues: Issue[];
+    contributors?: Contributor[];
     languages?: string[];
+    issues?: Issue[];
 }
 export type GitFile = components['schemas']['content-file'];
 export type GitContent = PickSingle<components['schemas']['content-directory']>;
@@ -46,6 +54,14 @@ export class RepositoryModel extends ListModel<
     organizationStore = new OrganizationModel();
 
     relation = {
+        contributors: memoize(async (URI: string) => {
+            const { body } = await this.client.get<Contributor[]>(
+                `repos/${URI}/contributors?per_page=100`
+            );
+            return (
+                body?.sort((a, b) => b.contributions - a.contributions) || []
+            );
+        }),
         issues: memoize(async (URI: string) => {
             const { body: issuesList } = await this.client.get<Issue[]>(
                 `repos/${URI}/issues?per_page=100`
@@ -157,5 +173,26 @@ export class RepositoryModel extends ListModel<
             content: await encodeBase64(content)
         });
         return body!.content;
+    }
+
+    async getAllContributors() {
+        const repositories = await this.getAll({ relation: ['contributors'] });
+
+        const contributors = repositories
+            .filter(({ fork, archived }) => !archived && !fork)
+            .flatMap(({ contributors }) => contributors!)
+            .filter(({ type }) => type === 'User');
+
+        const userGroup = groupBy(contributors, 'login');
+
+        return Object.entries(userGroup)
+            .map(([login, list]) => ({
+                ...list[0],
+                contributions: list.reduce(
+                    (sum, { contributions }) => sum + contributions,
+                    0
+                )
+            }))
+            .sort((a, b) => b.contributions - a.contributions);
     }
 }

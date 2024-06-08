@@ -8,6 +8,15 @@
 
 [![NPM](https://nodei.co/npm/mobx-github.png?downloads=true&downloadRank=true&stars=true)][7]
 
+## Model
+
+1. [User](source/User.ts)
+2. [Organization](source/Organization.ts)
+3. [Repository](source/Repository.ts)
+    1. Contributor
+    2. Language
+    3. Issue
+
 ## Usage
 
 ### Installation
