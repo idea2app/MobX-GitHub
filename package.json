@@ -1,6 +1,6 @@
 {
     "name": "mobx-github",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "license": "LGPL-3.0-or-later",
     "author": "shiy2008@gmail.com",
     "description": "MobX SDK for GitHub RESTful API, which is based on MobX-RESTful.",

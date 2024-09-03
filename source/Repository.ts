@@ -130,18 +130,18 @@ export class RepositoryModel extends ListModel<
                 ...(await this.getOneRelation(item.full_name, relation))
             }))
         );
-        if (!isUser) {
-            const { public_repos } =
-                await this.organizationStore.getOne(namespace);
+        var { totalCount } = this;
 
-            return { pageData, totalCount: public_repos };
-        }
-        if (!this.totalCount) {
-            const { body } = await this.client.get<User>('user');
+        if (!this.totalCount)
+            if (!isUser)
+                ({ public_repos: totalCount } =
+                    await this.organizationStore.getOne(namespace));
+            else {
+                const { body } = await this.client.get<User>('user');
 
-            var totalCount =
-                body!.public_repos + (body!.total_private_repos || 0);
-        }
+                totalCount =
+                    body!.public_repos + (body!.total_private_repos || 0);
+            }
         return { pageData, totalCount };
     }
 
