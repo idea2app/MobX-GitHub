@@ -22,8 +22,11 @@
 ### Installation
 
 ```shell
-npm i mobx-restful mobx-github
+npm i mobx-github
 ```
+
+> Some **Node.js** tips about the upstream `mobx-restful` you should know:
+> https://github.com/idea2app/MobX-RESTful?tab=readme-ov-file#usage
 
 ### `tsconfig.json`
 
