@@ -2,11 +2,11 @@
 
 [MobX][1] SDK for [GitHub RESTful API][2], which is based on [MobX-RESTful][3].
 
-[![MobX compatibility](https://img.shields.io/badge/Compatible-1?logo=mobx&label=MobX%206%2F7)][4]
-[![NPM Dependency](https://img.shields.io/librariesio/release/npm/mobx-github)][5]
-[![CI & CD](https://github.com/idea2app/MobX-GitHub/actions/workflows/main.yml/badge.svg)][6]
+[![MobX compatibility](https://img.shields.io/badge/Compatible-1?logo=mobx&label=MobX%206%2F7)][1]
+[![NPM Dependency](https://img.shields.io/librariesio/release/npm/mobx-github)][4]
+[![CI & CD](https://github.com/idea2app/MobX-GitHub/actions/workflows/main.yml/badge.svg)][5]
 
-[![NPM](https://nodei.co/npm/mobx-github.png?downloads=true&downloadRank=true&stars=true)][7]
+[![NPM](https://nodei.co/npm/mobx-github.png?downloads=true&downloadRank=true&stars=true)][6]
 
 ## Model
 
@@ -24,9 +24,6 @@
 ```shell
 npm i mobx-github
 ```
-
-> Some **Node.js** tips about the upstream `mobx-restful` you should know:
-> https://github.com/idea2app/MobX-RESTful?tab=readme-ov-file#usage
 
 ### `tsconfig.json`
 
@@ -65,12 +62,12 @@ export const userStore = new UserModel();
 
 ### `page/GitHub.tsx`
 
-Use [WebCell][8] as an Example
+Use [WebCell][7] as an Example
 
 ```tsx
 import { component, observer } from 'web-cell';
 
-import { userStore, organizationStore, repositoryStore } from '../model/GitHub';
+import { userStore } from '../model/GitHub';
 
 @component({ tagName: 'github-page' })
 @observer
@@ -100,8 +97,7 @@ export class GitHubPage extends HTMLElement {
 [1]: https://mobx.js.org/
 [2]: https://docs.github.com/en/rest
 [3]: https://github.com/idea2app/MobX-RESTful
-[4]: https://mobx.js.org/
-[5]: https://libraries.io/npm/mobx-github
-[6]: https://github.com/idea2app/MobX-GitHub/actions/workflows/main.yml
-[7]: https://nodei.co/npm/mobx-github/
-[8]: https://github.com/EasyWebApp/WebCell
+[4]: https://libraries.io/npm/mobx-github
+[5]: https://github.com/idea2app/MobX-GitHub/actions/workflows/main.yml
+[6]: https://nodei.co/npm/mobx-github/
+[7]: https://github.com/EasyWebApp/WebCell
