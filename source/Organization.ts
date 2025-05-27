@@ -20,7 +20,7 @@ export class OrganizationModel extends Stream<Organization>(ListModel) {
             count = 0;
         const baseURI = this.user ? `users/${this.user}/` : '';
 
-        for (let page = 0; ; page++) {
+        for (let page = 1; ; page++) {
             const { body } = await this.client.get<Organization[]>(
                 `${baseURI}orgs?${buildURLData({ per_page, page, since })}`
             );
