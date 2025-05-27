@@ -13,7 +13,10 @@ export class UserModel extends BaseModel {
     @observable
     accessor session: User | undefined;
 
-    organizationStore = new OrganizationModel();
+    @computed
+    get organizationStore() {
+        return new OrganizationModel(this.session?.login);
+    }
 
     @computed
     get namespaces() {
