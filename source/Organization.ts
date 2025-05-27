@@ -4,7 +4,7 @@ import { buildURLData } from 'web-utility';
 
 import { githubClient } from './client';
 
-export type Organization = components['schemas']['organization'];
+export type Organization = components['schemas']['organization-full'];
 
 export class OrganizationModel extends Stream<Organization>(ListModel) {
     client = githubClient;
@@ -21,7 +21,7 @@ export class OrganizationModel extends Stream<Organization>(ListModel) {
             );
             if (!body![0]) break;
 
-            since = body![0].id;
+            since = body!.at(-1)?.id;
             count += body!.length;
             yield* body!;
 
