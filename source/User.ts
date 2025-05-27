@@ -31,8 +31,10 @@ export class UserModel extends BaseModel {
 
         const { body } = await this.client.get<User>('user');
 
+        this.session = body;
+
         await this.organizationStore.getAll();
 
-        return (this.session = body!);
+        return body!;
     }
 }
