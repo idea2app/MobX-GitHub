@@ -46,7 +46,7 @@ npm i mobx-github
 
 ### `model/GitHub.ts`
 
-```typescript
+````typescript
 import { githubClient, UserModel, ContentModel } from 'mobx-github';
 
 // Any possible way to pass GitHub access token
@@ -63,33 +63,6 @@ githubClient.use(({ request }, next) => {
 });
 
 export const userStore = new UserModel();
-
-// Content API for traversing Git file trees
-export class MyContentModel extends ContentModel {
-    constructor(owner: string, repository: string) {
-        super(owner, repository);
-    }
-}
-
-// Usage examples:
-const contentStore = new MyContentModel('idea2app', 'MobX-GitHub');
-
-// Get directory contents (non-recursive)
-const files = await contentStore.getDirectoryContents('source');
-
-// Get all files recursively
-const allFiles = await contentStore.getAllContents();
-
-// Find TypeScript files
-for await (const file of contentStore.findByExtension('ts')) {
-    console.log('TypeScript file:', file.full_path);
-}
-
-// Find files matching a pattern
-for await (const file of contentStore.findByPattern(/\.md$/)) {
-    console.log('Markdown file:', file.full_path);
-}
-```
 
 ### `page/GitHub.tsx`
 
@@ -123,7 +96,7 @@ export class GitHubPage extends HTMLElement {
         );
     }
 }
-```
+````
 
 [1]: https://mobx.js.org/
 [2]: https://docs.github.com/en/rest
