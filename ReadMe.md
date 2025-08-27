@@ -46,8 +46,8 @@ npm i mobx-github
 
 ### `model/GitHub.ts`
 
-````typescript
-import { githubClient, UserModel, ContentModel } from 'mobx-github';
+```typescript
+import { githubClient, UserModel } from 'mobx-github';
 
 // Any possible way to pass GitHub access token
 // from local files or back-end servers to Web pages
@@ -63,6 +63,7 @@ githubClient.use(({ request }, next) => {
 });
 
 export const userStore = new UserModel();
+```
 
 ### `page/GitHub.tsx`
 
@@ -96,7 +97,7 @@ export class GitHubPage extends HTMLElement {
         );
     }
 }
-````
+```
 
 [1]: https://mobx.js.org/
 [2]: https://docs.github.com/en/rest

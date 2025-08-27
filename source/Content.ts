@@ -4,12 +4,9 @@ import { makeArray } from 'web-utility';
 
 import { githubClient } from './client';
 
-export type Content = components['schemas']['content-directory'][number];
-export type ContentFile = components['schemas']['content-file'];
-
-export interface ContentFilter extends Filter<Content> {
+export type Content = components['schemas']['content-directory'][number] & {
     parent_path?: string;
-}
+};
 
 export class ContentModel extends Stream<Content>(ListModel) {
     client = githubClient;
@@ -24,6 +21,7 @@ export class ContentModel extends Stream<Content>(ListModel) {
 
     /**
      * Get repository content at a specific path
+     *
      * @see {@link https://docs.github.com/en/rest/repos/contents#get-repository-content}
      */
     @toggle('downloading')
@@ -36,24 +34,15 @@ export class ContentModel extends Stream<Content>(ListModel) {
 
     async *openStream({ path, name }: Filter<Content>) {
         const setCount = (total: number) => (this.totalCount = total);
-        const namePattern = name ? new RegExp(name) : null;
 
-        if (path) {
-            for await (const content of this.traverseChildren(path, setCount)) {
-                if (!namePattern || namePattern.test(content.name)) {
-                    yield content;
-                }
-            }
-        } else {
-            for await (const content of this.traverseTree(
-                undefined,
-                setCount
-            )) {
-                if (!namePattern || namePattern.test(content.name)) {
-                    yield content;
-                }
-            }
-        }
+        const namePattern = name && new RegExp(name);
+
+        const stream = path
+            ? this.traverseChildren(path, setCount)
+            : this.traverseTree(undefined, setCount);
+
+        for await (const content of stream)
+            if (!namePattern || namePattern.test(content.name)) yield content;
     }
 
     /**
@@ -70,7 +59,11 @@ export class ContentModel extends Stream<Content>(ListModel) {
 
         onCount(contents.length);
 
-        yield* contents;
+        for (const content of contents) {
+            content.parent_path = parentPath;
+
+            yield content;
+        }
     }
 
     /**
@@ -88,14 +81,12 @@ export class ContentModel extends Stream<Content>(ListModel) {
             parentContent?.path || '',
             addCount
         );
-
         for await (const content of stream) {
             yield content;
 
             if (content.type === 'dir')
                 yield* this.traverseTree(content, addCount);
         }
-
         onCount?.(totalCount);
     }
 }

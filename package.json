@@ -1,6 +1,6 @@
 {
     "name": "mobx-github",
-    "version": "0.3.11",
+    "version": "0.4.0-rc.0",
     "license": "LGPL-3.0-or-later",
     "author": "shiy2008@gmail.com",
     "description": "MobX SDK for GitHub RESTful API, which is based on MobX-RESTful.",
@@ -27,25 +27,25 @@
     "dependencies": {
         "@octokit/openapi-types": "^25.1.0",
         "@swc/helpers": "^0.5.17",
-        "@types/lodash": "^4.17.17",
+        "@types/lodash": "^4.17.20",
         "koajax": ">=0.9 <4",
         "lodash": "^4.17.21",
         "mobx": ">=6.11",
         "mobx-restful": ">=0.7.0-rc.0 <3",
-        "web-utility": "^4.4.3"
+        "web-utility": "^4.5.1"
     },
     "devDependencies": {
-        "@parcel/config-default": "~2.15.2",
-        "@parcel/packager-ts": "~2.15.2",
-        "@parcel/transformer-typescript-tsc": "~2.15.2",
-        "@parcel/transformer-typescript-types": "~2.15.2",
+        "@parcel/config-default": "~2.15.4",
+        "@parcel/packager-ts": "~2.15.4",
+        "@parcel/transformer-typescript-tsc": "~2.15.4",
+        "@parcel/transformer-typescript-types": "~2.15.4",
         "husky": "^9.1.7",
-        "lint-staged": "^16.0.0",
-        "parcel": "~2.15.2",
-        "prettier": "^3.5.3",
-        "typedoc": "^0.28.5",
-        "typedoc-plugin-mdn-links": "^5.0.2",
-        "typescript": "~5.8.3"
+        "lint-staged": "^16.1.5",
+        "parcel": "~2.15.4",
+        "prettier": "^3.6.2",
+        "typedoc": "^0.28.11",
+        "typedoc-plugin-mdn-links": "^5.0.9",
+        "typescript": "~5.9.2"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
