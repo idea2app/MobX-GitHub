@@ -16,6 +16,11 @@
     1. Contributor
     2. Language
     3. Issue
+4. [Content](source/Content.ts) - Git file tree traversal
+    1. Directory traversal
+    2. Recursive tree traversal
+    3. File search by extension
+    4. File search by pattern
 
 ## Usage
 
@@ -93,6 +98,11 @@ export class GitHubPage extends HTMLElement {
     }
 }
 ```
+
+## User cases
+
+1. https://github.com/FreeCodeCamp-Chengdu/FreeCodeCamp-Chengdu.github.io
+2. https://github.com/Open-Source-Bazaar/Open-Source-Bazaar.github.io
 
 [1]: https://mobx.js.org/
 [2]: https://docs.github.com/en/rest
