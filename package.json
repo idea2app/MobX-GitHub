@@ -1,6 +1,6 @@
 {
     "name": "mobx-github",
-    "version": "0.4.0-rc.0",
+    "version": "0.4.0",
     "license": "LGPL-3.0-or-later",
     "author": "shiy2008@gmail.com",
     "description": "MobX SDK for GitHub RESTful API, which is based on MobX-RESTful.",
@@ -32,7 +32,7 @@
         "lodash": "^4.17.21",
         "mobx": ">=6.11",
         "mobx-restful": ">=0.7.0-rc.0 <3",
-        "web-utility": "^4.5.1"
+        "web-utility": "^4.5.3"
     },
     "devDependencies": {
         "@parcel/config-default": "~2.15.4",

@@ -99,6 +99,11 @@ export class GitHubPage extends HTMLElement {
 }
 ```
 
+## User cases
+
+1. https://github.com/FreeCodeCamp-Chengdu/FreeCodeCamp-Chengdu.github.io
+2. https://github.com/Open-Source-Bazaar/Open-Source-Bazaar.github.io
+
 [1]: https://mobx.js.org/
 [2]: https://docs.github.com/en/rest
 [3]: https://github.com/idea2app/MobX-RESTful
