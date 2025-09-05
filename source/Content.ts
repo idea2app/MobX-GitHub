@@ -1,12 +1,17 @@
 import { components } from '@octokit/openapi-types';
-import { Filter, ListModel, Stream, toggle } from 'mobx-restful';
-import { makeArray } from 'web-utility';
+import { Filter, ListModel, NewData, Stream, toggle } from 'mobx-restful';
+import { encodeBase64, makeArray } from 'web-utility';
 
 import { githubClient } from './client';
 
 export type Content = components['schemas']['content-directory'][number] & {
     parent_path?: string;
 };
+
+interface ContentResponse {
+    content: Content;
+    commit: components['schemas']['commit'];
+}
 
 export class ContentModel extends Stream<Content>(ListModel) {
     client = githubClient;
@@ -26,10 +31,23 @@ export class ContentModel extends Stream<Content>(ListModel) {
      */
     @toggle('downloading')
     async getOne(path: string) {
-        const { body } = await this.client.get<Content | Content[]>(
-            `${this.baseURI}/${path}`
-        );
+        const { body } = await this.client.get<Content | Content[]>(`${this.baseURI}/${path}`);
+
         return Array.isArray(body) ? body[0] : body!;
+    }
+
+    @toggle('uploading')
+    async updateOne({ content }: NewData<Content>, path: string, message = `[update] ${path}`) {
+        try {
+            var { sha } = await this.getOne(path);
+        } catch {}
+
+        const { body } = await this.client.put<ContentResponse>(`${this.baseURI}/${path}`, {
+            sha,
+            message,
+            content: encodeBase64(content)
+        });
+        return body!.content;
     }
 
     async *openStream({ path, name }: Filter<Content>) {
@@ -52,9 +70,7 @@ export class ContentModel extends Stream<Content>(ListModel) {
         parentPath = '',
         onCount: (total: number) => any = () => {}
     ): AsyncGenerator<Content> {
-        const { body } = await this.client.get<Content[]>(
-            `${this.baseURI}/${parentPath}`
-        );
+        const { body } = await this.client.get<Content[]>(`${this.baseURI}/${parentPath}`);
         const contents = makeArray(body);
 
         onCount(contents.length);
@@ -77,15 +93,12 @@ export class ContentModel extends Stream<Content>(ListModel) {
 
         const addCount = (total: number) => (totalCount += total);
 
-        const stream = this.traverseChildren(
-            parentContent?.path || '',
-            addCount
-        );
+        const stream = this.traverseChildren(parentContent?.path || '', addCount);
+
         for await (const content of stream) {
             yield content;
 
-            if (content.type === 'dir')
-                yield* this.traverseTree(content, addCount);
+            if (content.type === 'dir') yield* this.traverseTree(content, addCount);
         }
         onCount?.(totalCount);
     }

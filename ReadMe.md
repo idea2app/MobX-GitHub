@@ -21,6 +21,10 @@
     2. Recursive tree traversal
     3. File search by extension
     4. File search by pattern
+5. [Issue](source/Issue.ts)
+6. [Pull Request](source/PullRequest.ts)
+7. [Discussion](source/Discussion.ts)
+8. [Contributor](source/Contributor.ts)
 
 ## Usage
 

@@ -1,6 +1,6 @@
 {
     "name": "mobx-github",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "license": "LGPL-3.0-or-later",
     "author": "shiy2008@gmail.com",
     "description": "MobX SDK for GitHub RESTful API, which is based on MobX-RESTful.",
@@ -40,10 +40,10 @@
         "@parcel/transformer-typescript-tsc": "~2.15.4",
         "@parcel/transformer-typescript-types": "~2.15.4",
         "husky": "^9.1.7",
-        "lint-staged": "^16.1.5",
+        "lint-staged": "^16.1.6",
         "parcel": "~2.15.4",
         "prettier": "^3.6.2",
-        "typedoc": "^0.28.11",
+        "typedoc": "^0.28.12",
         "typedoc-plugin-mdn-links": "^5.0.9",
         "typescript": "~5.9.2"
     },
@@ -60,7 +60,8 @@
         "singleQuote": true,
         "trailingComma": "none",
         "arrowParens": "avoid",
-        "tabWidth": 4
+        "tabWidth": 4,
+        "printWidth": 100
     },
     "lint-staged": {
         "*.{md,ts,json,yml}": "prettier --write"
