@@ -22,14 +22,14 @@ export class ContributorModel extends Stream<Contributor, ContributorFilter>(Lis
         this.baseURI = `repos/${owner}/${repository}/contributors`;
     }
 
-    async *openStream({ affiliation, permission }: ContributorFilter) {
+    async *openStream(filter: ContributorFilter) {
         const { client, baseURI, pageSize: per_page } = this;
 
         var count = 0;
 
         for (let page = 1; ; page++) {
             const { body } = await client.get<Contributor[]>(
-                `${baseURI}?${buildURLData({ per_page, page, affiliation, permission })}`
+                `${baseURI}?${buildURLData({ per_page, page, ...filter })}`
             );
             if (!body![0]) break;
 

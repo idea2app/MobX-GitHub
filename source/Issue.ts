@@ -21,14 +21,14 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
         this.baseURI = `repos/${owner}/${repository}/issues`;
     }
 
-    async *openStream({ sort, direction }: IssueFilter) {
+    async *openStream(filter: IssueFilter) {
         var per_page = this.pageSize,
             since: number | undefined,
             count = 0;
 
         for (let page = 1; ; page++) {
             const { body } = await this.client.get<Issue[]>(
-                `${this.baseURI}?${buildURLData({ per_page, page, since, sort, direction })}`
+                `${this.baseURI}?${buildURLData({ per_page, page, since, ...filter })}`
             );
             const list = body!.filter(({ pull_request }) => !pull_request);
 
