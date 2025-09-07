@@ -37,7 +37,11 @@ export class ContentModel extends Stream<Content>(ListModel) {
     }
 
     @toggle('uploading')
-    async updateOne({ content }: NewData<Content>, path: string, message = `[update] ${path}`) {
+    async updateOne(
+        { content }: Partial<NewData<Content>>,
+        path: string,
+        message = `[update] ${path}`
+    ) {
         try {
             var { sha } = await this.getOne(path);
         } catch {}

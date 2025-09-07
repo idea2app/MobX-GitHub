@@ -23,18 +23,16 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
 
     async *openStream(filter: IssueFilter) {
         var per_page = this.pageSize,
-            since: number | undefined,
             count = 0;
 
         for (let page = 1; ; page++) {
             const { body } = await this.client.get<Issue[]>(
-                `${this.baseURI}?${buildURLData({ per_page, page, since, ...filter })}`
+                `${this.baseURI}?${buildURLData({ per_page, page, ...filter })}`
             );
             const list = body!.filter(({ pull_request }) => !pull_request);
 
             if (!body![0]) break;
 
-            since = body.at(-1)?.id;
             count += list.length;
             yield* list;
 
