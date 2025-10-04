@@ -1,5 +1,5 @@
 import { components } from '@octokit/openapi-types';
-import { Filter, ListModel, Stream } from 'mobx-restful';
+import { Filter, ListModel } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
 import { githubClient } from './client';
@@ -11,8 +11,14 @@ export interface CheckRunFilter extends Filter<CheckRun> {
     filter?: 'latest' | 'all';
 }
 
-export class CheckRunModel extends Stream<CheckRun, CheckRunFilter>(ListModel) {
+/**
+ * Model for GitHub Actions check runs
+ *
+ * @see {@link https://docs.github.com/en/rest/checks/runs?apiVersion=2022-11-28#list-check-runs-for-a-git-reference}
+ */
+export class CheckRunModel extends ListModel<CheckRun, CheckRunFilter> {
     client = githubClient;
+    baseURI = '';
 
     constructor(
         public owner: string,
@@ -23,15 +29,17 @@ export class CheckRunModel extends Stream<CheckRun, CheckRunFilter>(ListModel) {
         this.baseURI = `repos/${owner}/${repository}/commits/${ref}/check-runs`;
     }
 
-    async *openStream(filter: CheckRunFilter) {
-        const { client, baseURI } = this;
-        const { check_name, filter: filterType = 'latest', ...rest } = filter;
+    async loadPage(page: number, per_page: number, filter: CheckRunFilter) {
+        const { check_name, filter: filterType = 'latest' } = filter;
 
-        const { body } = await client.get<{ check_runs: CheckRun[] }>(
-            `${baseURI}?${buildURLData({ check_name, filter: filterType, per_page: 100, ...rest })}`
-        );
-        this.totalCount = body!.check_runs.length;
+        const { body } = await this.client.get<{
+            check_runs: CheckRun[];
+            total_count: number;
+        }>(`${this.baseURI}?${buildURLData({ check_name, filter: filterType, per_page, page })}`);
 
-        yield* body!.check_runs;
+        return {
+            pageData: body!.check_runs,
+            totalCount: body!.total_count
+        };
     }
 }

@@ -4,6 +4,7 @@ import { buildURLData } from 'web-utility';
 
 import { BaseFilter, githubClient } from './client';
 import { PullRequest } from './PullRequest';
+import { User } from './User';
 
 export type Issue = components['schemas']['issue'];
 export type IssueComment = components['schemas']['issue-comment'];
@@ -46,30 +47,81 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
     }
 
     /**
-     * Create a new issue
+     * Create or update an issue, with support for Copilot assignee
      *
      * @see {@link https://docs.github.com/en/rest/issues/issues#create-an-issue}
+     * @see {@link https://docs.github.com/en/rest/issues/issues#update-an-issue}
      */
-    async createOne({ title, body, assignees }: Partial<NewData<Issue>>) {
-        const { body: issue } = await this.client.post<Issue>(this.baseURI, {
-            title,
-            body,
-            assignees
-        });
-        return issue!;
+    async updateOne(data: Partial<NewData<Issue>>, id?: number) {
+        const { assignees, ...rest } = data;
+        const assigneeList = assignees as string[] | undefined;
+        const humanAssignees = assigneeList?.filter(login => login !== 'copilot');
+        const hasCopilotAssignee =
+            assigneeList && assigneeList.length !== (humanAssignees?.length || 0);
+
+        const issueData: Partial<NewData<Issue>> = {
+            ...rest,
+            ...(humanAssignees && { assignees: humanAssignees as any })
+        };
+
+        const issue = id ? await super.updateOne(issueData, id) : await super.updateOne(issueData);
+
+        if (hasCopilotAssignee && issue) await this.assignIssueToCopilot(issue);
+
+        return issue;
     }
 
     /**
-     * Create a comment on an issue
-     *
-     * @see {@link https://docs.github.com/en/rest/issues/comments#create-an-issue-comment}
+     * Assign Copilot bot to an issue using GitHub GraphQL API
      */
-    async createComment(issueNumber: number, body: string) {
-        const { body: comment } = await this.client.post<IssueComment>(
-            `${this.baseURI}/${issueNumber}/comments`,
-            { body }
+    private async assignIssueToCopilot(issue: Issue): Promise<void> {
+        const getUserQuery = `
+            query ($owner: String!, $name: String!) {
+                repository(owner: $owner, name: $name) {
+                    suggestedActors(
+                        loginNames: "copilot"
+                        capabilities: [CAN_BE_ASSIGNED]
+                        first: 1
+                    ) {
+                        nodes {
+                            login
+                            __typename
+                            ... on Bot { id }
+                        }
+                    }
+                }
+            }`;
+        type UserQueryResult = {
+            data: { repository: { suggestedActors: { nodes: User[] } } };
+        };
+
+        const { body: userResult } = await this.client.post<UserQueryResult>(
+            'https://api.github.com/graphql',
+            {
+                query: getUserQuery,
+                variables: { owner: this.owner, name: this.repository }
+            }
         );
-        return comment!;
+        const copilotId = userResult!.data.repository.suggestedActors.nodes[0].id;
+
+        const assignMutation = `
+            mutation ($issueId: ID!, $userId: ID!) {
+                replaceActorsForAssignable(input: {assignableId: $issueId, actorIds: [$userId]}) {
+                    assignable {
+                        ... on Issue {
+                            id
+                            title
+                            assignees(first: 10) {
+                                nodes { login }
+                            }
+                        }
+                    }
+                }
+            }`;
+        await this.client.post('https://api.github.com/graphql', {
+            query: assignMutation,
+            variables: { issueId: issue.id, userId: [copilotId] }
+        });
     }
 
     /**

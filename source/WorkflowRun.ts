@@ -1,5 +1,5 @@
 import { components } from '@octokit/openapi-types';
-import { Filter, ListModel, Stream } from 'mobx-restful';
+import { Filter, ListModel } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
 import { BaseFilter, githubClient } from './client';
@@ -11,8 +11,14 @@ export interface WorkflowRunFilter extends Filter<WorkflowRun>, BaseFilter {
     actor?: string;
 }
 
-export class WorkflowRunModel extends Stream<WorkflowRun, WorkflowRunFilter>(ListModel) {
+/**
+ * Model for GitHub Actions workflow runs
+ *
+ * @see {@link https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository}
+ */
+export class WorkflowRunModel extends ListModel<WorkflowRun, WorkflowRunFilter> {
     client = githubClient;
+    baseURI = '';
 
     constructor(
         public owner: string,
@@ -22,13 +28,13 @@ export class WorkflowRunModel extends Stream<WorkflowRun, WorkflowRunFilter>(Lis
         this.baseURI = `repos/${owner}/${repository}/actions/runs`;
     }
 
-    async *openStream(filter: WorkflowRunFilter) {
-        const { client, baseURI } = this;
-        const { branch, actor, direction, ...rest } = filter;
+    async loadPage(page: number, per_page: number, filter: WorkflowRunFilter) {
+        const { branch, actor, direction } = filter;
 
-        const { body } = await client.get<{ workflow_runs: WorkflowRun[] }>(
-            `${baseURI}?${buildURLData({ branch, actor, per_page: 100, ...rest })}`
-        );
+        const { body } = await this.client.get<{
+            workflow_runs: WorkflowRun[];
+            total_count: number;
+        }>(`${this.baseURI}?${buildURLData({ branch, actor, per_page, page })}`);
 
         const runs = body!.workflow_runs;
 
@@ -41,7 +47,9 @@ export class WorkflowRunModel extends Stream<WorkflowRun, WorkflowRunFilter>(Lis
             );
         }
 
-        this.totalCount = runs.length;
-        yield* runs;
+        return {
+            pageData: runs,
+            totalCount: body!.total_count
+        };
     }
 }
