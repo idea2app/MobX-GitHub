@@ -29,9 +29,11 @@ export class CheckRunModel extends ListModel<CheckRun, CheckRunFilter> {
         this.baseURI = `repos/${owner}/${repository}/commits/${ref}/check-runs`;
     }
 
-    async loadPage(page: number, per_page: number, filter: CheckRunFilter) {
-        const { check_name, filter: filterType = 'latest' } = filter;
-
+    async loadPage(
+        page: number,
+        per_page: number,
+        { check_name, filter: filterType = 'latest' }: CheckRunFilter
+    ) {
         const { body } = await this.client.get<{
             check_runs: CheckRun[];
             total_count: number;

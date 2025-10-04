@@ -3,7 +3,7 @@ import { Filter, ListModel, NewData, Stream } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
 import { BaseFilter, githubClient } from './client';
-import { PullRequest } from './PullRequest';
+import { PullRequest, PullRequestModel } from './PullRequest';
 import { User } from './User';
 
 export type Issue = components['schemas']['issue'];
@@ -52,21 +52,19 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
      * @see {@link https://docs.github.com/en/rest/issues/issues#create-an-issue}
      * @see {@link https://docs.github.com/en/rest/issues/issues#update-an-issue}
      */
-    async updateOne(data: Partial<NewData<Issue>>, id?: number) {
-        const { assignees, ...rest } = data;
-        const assigneeList = assignees as string[] | undefined;
-        const humanAssignees = assigneeList?.filter(login => login !== 'copilot');
-        const hasCopilotAssignee =
-            assigneeList && assigneeList.length !== (humanAssignees?.length || 0);
+    async updateOne({ assignees = [], ...rest }: Partial<NewData<Issue>>, id?: number) {
+        const assigneeList = assignees as string[];
+        const humanAssignees = assigneeList.filter(login => login !== 'copilot');
+        const hasCopilotAssignee = assigneeList.length !== humanAssignees.length;
 
-        const issueData: Partial<NewData<Issue>> = {
+        const issueData = {
             ...rest,
-            ...(humanAssignees && { assignees: humanAssignees as any })
-        };
+            ...(humanAssignees && { assignees: humanAssignees })
+        } as Partial<NewData<Issue>>;
 
-        const issue = id ? await super.updateOne(issueData, id) : await super.updateOne(issueData);
+        const issue = await super.updateOne(issueData, id);
 
-        if (hasCopilotAssignee && issue) await this.assignIssueToCopilot(issue);
+        if (hasCopilotAssignee) await this.assignIssueToCopilot(issue);
 
         return issue;
     }
@@ -129,17 +127,21 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
      *
      * @see {@link https://docs.github.com/en/graphql/reference/objects#pullrequest}
      */
-    async getPullRequests(issueNumber: number) {
+    async getLinkedPRs(issueNumber: number) {
+        const prNumbers = await this.getLinkedPRNumbers(issueNumber);
+        const prModel = new PullRequestModel(this.owner, this.repository);
+
+        return Promise.all(prNumbers.map(number => prModel.getOne(number)));
+    }
+
+    private async getLinkedPRNumbers(issueNumber: number) {
         const query = `
             query ($owner: String!, $name: String!, $number: Int!) {
                 repository(owner: $owner, name: $name) {
                     issue(number: $number) {
                         closedByPullRequestsReferences(first: 10) {
                             nodes {
-                                url
                                 number
-                                head
-                                merged
                             }
                         }
                     }
@@ -150,7 +152,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
                 repository: {
                     issue: {
                         closedByPullRequestsReferences: {
-                            nodes: Pick<PullRequest, 'url' | 'number' | 'head' | 'merged'>[];
+                            nodes: { number: number }[];
                         };
                     };
                 };
@@ -163,7 +165,9 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
                 variables: { owner: this.owner, name: this.repository, number: issueNumber }
             }
         );
-        return body!.data.repository.issue.closedByPullRequestsReferences.nodes;
+        return body!.data.repository.issue.closedByPullRequestsReferences.nodes.map(
+            node => node.number
+        );
     }
 }
 
@@ -193,7 +197,7 @@ export class IssueCommentModel extends Stream<IssueComment, IssueCommentFilter>(
             count += body!.length;
             yield* body!;
 
-            if (body!.length < this.pageSize) break;
+            if (body!.length < per_page) break;
         }
         this.totalCount = count;
     }
