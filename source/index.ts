@@ -7,3 +7,5 @@ export * from './Issue';
 export * from './PullRequest';
 export * from './Discussion';
 export * from './Contributor';
+export * from './CheckRun';
+export * from './WorkflowRun';
