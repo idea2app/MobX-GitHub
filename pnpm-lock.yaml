@@ -24,7 +24,7 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       mobx:
-        specifier: ^6.15.0
+        specifier: '>=6.11'
         version: 6.15.0
       mobx-restful:
         specifier: ^2.1.3
