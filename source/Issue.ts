@@ -3,7 +3,7 @@ import { Filter, ListModel, NewData, Stream } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
 import { BaseFilter, githubClient } from './client';
-import { PullRequest, PullRequestModel } from './PullRequest';
+import { PullRequestModel } from './PullRequest';
 import { User } from './User';
 
 export type Issue = components['schemas']['issue'];
@@ -72,7 +72,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
     /**
      * Assign Copilot bot to an issue using GitHub GraphQL API
      */
-    private async assignIssueToCopilot(issue: Issue): Promise<void> {
+    async assignIssueToCopilot(issue: Issue) {
         const getUserQuery = `
             query ($owner: String!, $name: String!) {
                 repository(owner: $owner, name: $name) {
@@ -92,7 +92,6 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
         type UserQueryResult = {
             data: { repository: { suggestedActors: { nodes: User[] } } };
         };
-
         const { body: userResult } = await this.client.post<UserQueryResult>(
             'https://api.github.com/graphql',
             {
@@ -127,19 +126,20 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
      *
      * @see {@link https://docs.github.com/en/graphql/reference/objects#pullrequest}
      */
-    async getLinkedPRs(issueNumber: number) {
-        const prNumbers = await this.getLinkedPRNumbers(issueNumber);
+    async getLinkedPRs(issueNumber: number, maxCount = 10) {
+        const prNumbers = await this.getLinkedPRNumbers(issueNumber, maxCount);
+
         const prModel = new PullRequestModel(this.owner, this.repository);
 
         return Promise.all(prNumbers.map(number => prModel.getOne(number)));
     }
 
-    private async getLinkedPRNumbers(issueNumber: number) {
+    private async getLinkedPRNumbers(issueNumber: number, maxCount = 10) {
         const query = `
-            query ($owner: String!, $name: String!, $number: Int!) {
+            query ($owner: String!, $name: String!, $number: Int!, $maxCount: Int!) {
                 repository(owner: $owner, name: $name) {
                     issue(number: $number) {
-                        closedByPullRequestsReferences(first: 10) {
+                        closedByPullRequestsReferences(first: $maxCount) {
                             nodes {
                                 number
                             }
@@ -150,11 +150,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
         type IssuePRQueryResult = {
             data: {
                 repository: {
-                    issue: {
-                        closedByPullRequestsReferences: {
-                            nodes: { number: number }[];
-                        };
-                    };
+                    issue: { closedByPullRequestsReferences: { nodes: { number: number }[] } };
                 };
             };
         };
@@ -162,11 +158,16 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
             `https://api.github.com/graphql`,
             {
                 query,
-                variables: { owner: this.owner, name: this.repository, number: issueNumber }
+                variables: {
+                    owner: this.owner,
+                    name: this.repository,
+                    number: issueNumber,
+                    maxCount
+                }
             }
         );
         return body!.data.repository.issue.closedByPullRequestsReferences.nodes.map(
-            node => node.number
+            ({ number }) => number
         );
     }
 }
@@ -190,7 +191,7 @@ export class IssueCommentModel extends Stream<IssueComment, IssueCommentFilter>(
 
         for (let page = 1; ; page++) {
             const { body } = await client.get<IssueComment[]>(
-                `${baseURI}?${buildURLData({ per_page, page, ...filter })}`
+                `${baseURI}?${buildURLData({ ...filter, per_page, page })}`
             );
             if (!body![0]) break;
 

@@ -33,11 +33,8 @@ export class WorkflowRunModel extends ListModel<WorkflowRun, WorkflowRunFilter> 
         const { body } = await this.client.get<{
             workflow_runs: WorkflowRun[];
             total_count: number;
-        }>(`${this.baseURI}?${buildURLData({ branch, actor, per_page, page, ...restFilter })}`);
+        }>(`${this.baseURI}?${buildURLData({ branch, actor, ...restFilter, per_page, page })}`);
 
-        return {
-            pageData: body!.workflow_runs,
-            totalCount: body!.total_count
-        };
+        return { pageData: body!.workflow_runs, totalCount: body!.total_count };
     }
 }

@@ -22,9 +22,12 @@
     3. File search by extension
     4. File search by pattern
 5. [Issue](source/Issue.ts)
-6. [Pull Request](source/PullRequest.ts)
-7. [Discussion](source/Discussion.ts)
-8. [Contributor](source/Contributor.ts)
+6. [Issue Comment](source/IssueComment.ts)
+7. [Pull Request](source/PullRequest.ts)
+8. [Discussion](source/Discussion.ts)
+9. [Contributor](source/Contributor.ts)
+10. [Check Run](source/CheckRun.ts)
+11. [Workflow Run](source/WorkflowRun.ts)
 
 ## Usage
 

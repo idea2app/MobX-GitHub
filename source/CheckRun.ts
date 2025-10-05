@@ -7,7 +7,6 @@ import { githubClient } from './client';
 export type CheckRun = components['schemas']['check-run'];
 
 export interface CheckRunFilter extends Filter<CheckRun> {
-    check_name?: string;
     filter?: 'latest' | 'all';
 }
 
@@ -32,16 +31,14 @@ export class CheckRunModel extends ListModel<CheckRun, CheckRunFilter> {
     async loadPage(
         page: number,
         per_page: number,
-        { check_name, filter: filterType = 'latest' }: CheckRunFilter
+        { name: check_name, filter = 'latest', ...restFilter }: CheckRunFilter
     ) {
         const { body } = await this.client.get<{
             check_runs: CheckRun[];
             total_count: number;
-        }>(`${this.baseURI}?${buildURLData({ check_name, filter: filterType, per_page, page })}`);
-
-        return {
-            pageData: body!.check_runs,
-            totalCount: body!.total_count
-        };
+        }>(
+            `${this.baseURI}?${buildURLData({ check_name, filter, ...restFilter, per_page, page })}`
+        );
+        return { pageData: body!.check_runs, totalCount: body!.total_count };
     }
 }
