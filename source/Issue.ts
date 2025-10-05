@@ -1,5 +1,5 @@
 import { components } from '@octokit/openapi-types';
-import { Filter, ListModel, NewData, Stream } from 'mobx-restful';
+import { Filter, ListModel, NewData, Stream, toggle } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
 import { BaseFilter, githubClient } from './client';
@@ -64,7 +64,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
 
         const issue = await super.updateOne(issueData, id);
 
-        if (hasCopilotAssignee) await this.assignIssueToCopilot(issue);
+        if (hasCopilotAssignee) await this.assignOneToCopilot(issue);
 
         return issue;
     }
@@ -72,7 +72,8 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
     /**
      * Assign Copilot bot to an issue using GitHub GraphQL API
      */
-    async assignIssueToCopilot(issue: Issue) {
+    @toggle('uploading')
+    async assignOneToCopilot(issue: Issue) {
         const getUserQuery = `
             query ($owner: String!, $name: String!) {
                 repository(owner: $owner, name: $name) {
@@ -126,6 +127,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
      *
      * @see {@link https://docs.github.com/en/graphql/reference/objects#pullrequest}
      */
+    @toggle('downloading')
     async getLinkedPRs(issueNumber: number, maxCount = 10) {
         const prNumbers = await this.getLinkedPRNumbers(issueNumber, maxCount);
 
