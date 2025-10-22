@@ -54,7 +54,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
      */
     async updateOne({ assignees = [], ...rest }: Partial<NewData<Issue>>, id?: number) {
         const assigneeList = assignees as string[];
-        const humanAssignees = assigneeList.filter(login => login !== 'copilot');
+        const humanAssignees = assigneeList.filter(login => login !== 'copilot-swe-agent');
         const hasCopilotAssignee = assigneeList.length !== humanAssignees.length;
 
         const issueData = {
@@ -71,6 +71,8 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
 
     /**
      * Assign Copilot bot to an issue using GitHub GraphQL API
+     *
+     * @see {@link https://github.com/orgs/community/discussions/164267}
      */
     @toggle('uploading')
     async assignOneToCopilot(issue: Issue) {
@@ -100,7 +102,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
                 variables: { owner: this.owner, name: this.repository }
             }
         );
-        const copilotId = userResult!.data.repository.suggestedActors.nodes[0].id;
+        const userId = userResult!.data.repository.suggestedActors.nodes[0].id;
 
         const assignMutation = `
             mutation ($issueId: ID!, $userId: ID!) {
@@ -116,10 +118,11 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
                     }
                 }
             }`;
-        await this.client.post('https://api.github.com/graphql', {
+        const { body: assignResult } = await this.client.post('https://api.github.com/graphql', {
             query: assignMutation,
-            variables: { issueId: issue.id, userId: [copilotId] }
+            variables: { issueId: issue.id, userId }
         });
+        return assignResult;
     }
 
     /**
