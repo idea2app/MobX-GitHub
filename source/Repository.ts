@@ -18,7 +18,7 @@ export interface GitRepository extends Repository {
 }
 
 export interface RepositoryFilter extends Filter<GitRepository> {
-    relation: (keyof RepositoryModel['relation'])[];
+    relation?: (keyof RepositoryModel['relation'])[];
 }
 
 type ReturnMap<T> = {

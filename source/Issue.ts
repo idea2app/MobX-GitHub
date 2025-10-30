@@ -72,6 +72,7 @@ export class IssueModel extends Stream<Issue, IssueFilter>(ListModel) {
     /**
      * Assign Copilot bot to an issue using GitHub GraphQL API
      *
+     * @see {@link https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-a-pr#assigning-an-existing-issue}
      * @see {@link https://github.com/orgs/community/discussions/164267}
      */
     @toggle('uploading')
