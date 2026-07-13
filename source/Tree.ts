@@ -1,15 +1,14 @@
 import { components } from '@octokit/openapi-types';
-import { Filter, ListModel, Stream } from 'mobx-restful';
+import { Filter, ListModel, Stream, toggle } from 'mobx-restful';
 import { buildURLData } from 'web-utility';
 
 import { githubClient } from './client';
 
 type GitTree = components['schemas']['git-tree'];
 
-export type Tree = GitTree['tree'][number];
-export type TreeFilter = Filter<Tree> & { name?: string };
+export type Tree = Pick<GitTree, 'sha'> & Partial<Omit<GitTree & GitTree['tree'][number], 'sha'>>;
 
-export class TreeModel extends Stream<Tree, TreeFilter>(ListModel) {
+export class TreeModel extends Stream<Tree>(ListModel) {
     client = githubClient;
 
     constructor(
@@ -20,56 +19,50 @@ export class TreeModel extends Stream<Tree, TreeFilter>(ListModel) {
         this.baseURI = `repos/${owner}/${repository}/git/trees`;
     }
 
-    protected async getTree(treeSHA = 'HEAD', recursive = false) {
-        const query = recursive ? `?${buildURLData({ recursive: 1 })}` : '';
-
-        const { body } = await this.client.get<GitTree>(`${this.baseURI}/${treeSHA}${query}`);
-
+    /**
+     * @see {@link https://docs.github.com/en/rest/git/trees#get-a-tree}
+     */
+    @toggle('downloading')
+    async getOne(treeSHA = 'HEAD', recursive?: boolean) {
+        const { body } = await this.client.get<GitTree>(
+            `${this.baseURI}/${treeSHA}?${buildURLData({ recursive })}`
+        );
         return body!;
     }
 
-    async *openStream({ path, name }: TreeFilter) {
-        const namePattern = name && new RegExp(name);
-        const pathPrefix = path ? `${path}/` : '';
-        const matchFilter = (item: Tree) =>
-            (!path || item.path.startsWith(pathPrefix)) &&
-            (!namePattern || namePattern.test(item.path.split('/').pop()!));
+    async *openStream({ path }: Filter<Tree>) {
+        const matchFilter = (item: Tree) => !path || item.path.startsWith(path);
 
-        const rootTree = await this.getTree('HEAD', true);
-        const results = [...rootTree.tree];
-        const pathSet = new Set<string>();
+        const root = await this.getOne('HEAD', true);
 
-        for (const item of results) {
+        const pathSet = new Set<string>(),
+            treeNodes: Tree[] = [];
+
+        for (const item of root.tree) {
             pathSet.add(item.path);
+
+            if (item.type === 'tree') treeNodes.push(item);
 
             if (matchFilter(item)) yield item;
         }
+        let totalCount = root.tree.length;
 
-        if (rootTree.truncated) {
-            let index = 0;
-
-            while (index < results.length) {
-                const parent = results[index];
-                index += 1;
-
-                if (parent.type !== 'tree') continue;
-
-                const { tree } = await this.getTree(parent.sha);
+        if (root.truncated)
+            for (const { path, sha } of treeNodes) {
+                const { tree } = await this.getOne(sha);
 
                 for (const item of tree) {
-                    const fullPath = `${parent.path}/${item.path}`;
+                    const fullPath = `${path}/${item.path}`;
 
                     if (pathSet.has(fullPath)) continue;
 
                     const node = { ...item, path: fullPath };
 
-                    results.push(node);
-                    pathSet.add(fullPath);
+                    totalCount += 1;
 
                     if (matchFilter(node)) yield node;
                 }
             }
-        }
-        this.totalCount = results.length;
+        this.totalCount = totalCount;
     }
 }
