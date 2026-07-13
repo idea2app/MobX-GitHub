@@ -9,3 +9,5 @@ export * from './Discussion';
 export * from './Contributor';
 export * from './CheckRun';
 export * from './WorkflowRun';
+
+export * from './Tree';
