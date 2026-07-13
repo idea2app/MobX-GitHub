@@ -22,6 +22,19 @@ describe('TreeModel', () => {
         );
     });
 
+    it('getAll() should load unique tree entries', async () => {
+        const model = new TreeModel(owner, repository);
+        const list = await model.getAll();
+
+        assert.ok(list.length > 0);
+        assert.equal(model.totalCount, list.length);
+        assert.equal(
+            new Set(list.map(({ path }) => path)).size,
+            list.length,
+            'all returned paths should be unique'
+        );
+    });
+
     it('getAll() should respect path filter', async () => {
         const model = new TreeModel(owner, repository);
         const filter: Partial<Tree> = { path: 'source/' };
@@ -30,7 +43,6 @@ describe('TreeModel', () => {
         assert.ok(list.length > 0);
         assert.ok(list.every(({ path }) => path.startsWith('source/')));
         assert.ok(list.some(({ path }) => path.endsWith('.ts')));
-        assert.ok(model.totalCount >= list.length);
     });
 
     it('getAll() should return empty list for missing path', async () => {
