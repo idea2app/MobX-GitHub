@@ -42,3 +42,9 @@ test('TreeModel#openStream() should respect path filter', async () => {
     assert.ok(list.every(({ path }) => path.startsWith('source/')));
     assert.ok(list.some(({ path }) => path.endsWith('.ts')));
 });
+
+test('TreeModel#openStream() should return empty list for missing path', async () => {
+    const { list } = await collect({ path: '__path_not_exists__/' });
+
+    assert.equal(list.length, 0);
+});
