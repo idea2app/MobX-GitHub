@@ -30,8 +30,9 @@ export class TreeModel extends Stream<Tree, TreeFilter>(ListModel) {
 
     async *openStream({ path, name }: TreeFilter) {
         const namePattern = name && new RegExp(name);
+        const pathPrefix = path ? `${path}/` : '';
         const matchFilter = (item: Tree) =>
-            (!path || item.path === path || item.path.startsWith(`${path}/`)) &&
+            (!path || item.path.startsWith(pathPrefix)) &&
             (!namePattern || namePattern.test(item.path.split('/').pop()!));
 
         const rootTree = await this.getTree('HEAD', true);
@@ -44,27 +45,31 @@ export class TreeModel extends Stream<Tree, TreeFilter>(ListModel) {
             if (matchFilter(item)) yield item;
         }
 
-        if (rootTree.truncated)
-            for (let index = 0; index < results.length; index++) {
+        if (rootTree.truncated) {
+            let index = 0;
+
+            while (index < results.length) {
                 const parent = results[index];
+                index += 1;
 
                 if (parent.type !== 'tree') continue;
 
                 const { tree } = await this.getTree(parent.sha);
 
                 for (const item of tree) {
-                    const path = `${parent.path}/${item.path}`;
+                    const fullPath = `${parent.path}/${item.path}`;
 
-                    if (pathSet.has(path)) continue;
+                    if (pathSet.has(fullPath)) continue;
 
-                    const node = { ...item, path };
+                    const node = { ...item, path: fullPath };
 
                     results.push(node);
-                    pathSet.add(path);
+                    pathSet.add(fullPath);
 
                     if (matchFilter(node)) yield node;
                 }
             }
+        }
         this.totalCount = results.length;
     }
 }
