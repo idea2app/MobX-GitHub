@@ -30,16 +30,19 @@ export class TreeModel extends Stream<Tree, TreeFilter>(ListModel) {
 
     async *openStream({ path, name }: TreeFilter) {
         const namePattern = name && new RegExp(name);
-        const prefix = path && `${path}/`;
         const matchFilter = (item: Tree) =>
-            (!path || item.path === path || item.path.startsWith(prefix!)) &&
+            (!path || item.path === path || item.path.startsWith(`${path}/`)) &&
             (!namePattern || namePattern.test(item.path.split('/').pop()!));
 
         const rootTree = await this.getTree('HEAD', true);
         const results = [...rootTree.tree];
-        const pathSet = new Set(results.map(({ path }) => path));
+        const pathSet = new Set<string>();
 
-        for (const item of results) if (matchFilter(item)) yield item;
+        for (const item of results) {
+            pathSet.add(item.path);
+
+            if (matchFilter(item)) yield item;
+        }
 
         if (rootTree.truncated)
             for (let index = 0; index < results.length; index++) {
