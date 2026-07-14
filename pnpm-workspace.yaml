@@ -1,3 +1,5 @@
+packages:
+  - .
 autoInstallPeers: false
 allowBuilds:
   '@parcel/watcher': true

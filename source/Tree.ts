@@ -48,7 +48,9 @@ export class TreeModel extends Stream<Tree>(ListModel) {
         let totalCount = root.tree.length;
 
         if (root.truncated)
-            for (const { path, sha } of treeNodes) {
+            for (let index = 0; index < treeNodes.length; index++) {
+                const { path, sha } = treeNodes[index];
+
                 const { tree } = await this.getOne(sha);
 
                 for (const item of tree) {
@@ -56,11 +58,15 @@ export class TreeModel extends Stream<Tree>(ListModel) {
 
                     if (pathSet.has(fullPath)) continue;
 
+                    pathSet.add(fullPath);
+
                     const node = { ...item, path: fullPath };
 
                     totalCount += 1;
 
                     if (matchFilter(node)) yield node;
+
+                    if (node.type === 'tree') treeNodes.push(node);
                 }
             }
         this.totalCount = totalCount;
