@@ -1,3 +1,5 @@
+pnpm-workspace.yaml
+test/
 .parcel*
 docs/
 .env
