@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { Tree, TreeModel } from '../source/Tree';
+import { TreeModel } from '../source/Tree';
 
 const owner = 'idea2app';
 const repository = 'MobX-GitHub';
 
-describe('TreeModel', () => {
-    it('getOne() should load tree entries from GitHub API', async () => {
+describe('Tree model', () => {
+    it('should load tree entries from GitHub API with getOne()', async () => {
         const model = new TreeModel(owner, repository);
-        const { tree } = await model.getOne('HEAD', true);
+        const { tree } = await model.getOne('HEAD');
 
         assert.ok(tree.length > 0);
         assert.ok(
@@ -17,12 +17,12 @@ describe('TreeModel', () => {
             'should contain package.json'
         );
         assert.ok(
-            tree.some(({ path, type }) => path === 'source/index.ts' && type === 'blob'),
-            'should contain source/index.ts'
+            tree.some(({ path, type }) => path === 'source' && type === 'tree'),
+            'should contain source directory'
         );
     });
 
-    it('getAll() should load unique tree entries', async () => {
+    it('should load unique tree entries with getAll()', async () => {
         const model = new TreeModel(owner, repository);
         const list = await model.getAll();
 
@@ -35,17 +35,16 @@ describe('TreeModel', () => {
         );
     });
 
-    it('getAll() should respect path filter', async () => {
+    it('should respect path filter with getAll()', async () => {
         const model = new TreeModel(owner, repository);
-        const filter: Partial<Tree> = { path: 'source/' };
-        const list = await model.getAll(filter);
+        const list = await model.getAll({ path: 'source/' });
 
         assert.ok(list.length > 0);
         assert.ok(list.every(({ path }) => path.startsWith('source/')));
         assert.ok(list.some(({ path }) => path.endsWith('.ts')));
     });
 
-    it('getAll() should return empty list for missing path', async () => {
+    it('should return empty list for missing path with getAll()', async () => {
         const model = new TreeModel(owner, repository);
         const list = await model.getAll({ path: '__path_not_exists__/' });
 

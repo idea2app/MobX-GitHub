@@ -65,7 +65,7 @@
     },
     "scripts": {
         "prepare": "husky",
-        "test": "lint-staged",
+        "test": "npx tsx --test test/Tree.test.ts",
         "build": "rm -rf .parcel-cache/ dist/ docs/  &&  parcel build  &&  typedoc source/",
         "prepublishOnly": "npm test  &&  npm run build"
     }
