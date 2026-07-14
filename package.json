@@ -68,6 +68,6 @@
         "lint": "lint-staged",
         "test": "npx tsx --test test/*.test.ts",
         "build": "rm -rf .parcel-cache/ dist/ docs/  &&  parcel build  &&  typedoc source/",
-        "prepublishOnly": "npm test  &&  npm run build"
+        "prepublishOnly": "npm run lint  &&  npm test  &&  npm run build"
     }
 }
