@@ -21,13 +21,14 @@
     2. Recursive tree traversal
     3. File search by extension
     4. File search by pattern
-5. [Issue](source/Issue.ts)
-6. [Issue Comment](source/IssueComment.ts)
-7. [Pull Request](source/PullRequest.ts)
-8. [Discussion](source/Discussion.ts)
-9. [Contributor](source/Contributor.ts)
-10. [Check Run](source/CheckRun.ts)
-11. [Workflow Run](source/WorkflowRun.ts)
+5. [Tree](source/Tree.ts)
+6. [Issue](source/Issue.ts)
+7. [Issue Comment](source/IssueComment.ts)
+8. [Pull Request](source/PullRequest.ts)
+9. [Discussion](source/Discussion.ts)
+10. [Contributor](source/Contributor.ts)
+11. [Check Run](source/CheckRun.ts)
+12. [Workflow Run](source/WorkflowRun.ts)
 
 ## Usage
 

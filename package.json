@@ -1,6 +1,6 @@
 {
     "name": "mobx-github",
-    "version": "0.6.2",
+    "version": "0.7.0",
     "license": "LGPL-3.0-or-later",
     "author": "shiy2008@gmail.com",
     "description": "MobX SDK for GitHub RESTful API, which is based on MobX-RESTful.",
@@ -25,36 +25,29 @@
         "url": "https://github.com/idea2app/MobX-GitHub/issues"
     },
     "dependencies": {
-        "@octokit/openapi-types": "^26.0.0",
-        "@swc/helpers": "^0.5.17",
-        "@types/lodash": "^4.17.20",
-        "koajax": "^3.1.2",
-        "lodash": "^4.17.21",
+        "@octokit/openapi-types": "^27.0.0",
+        "@swc/helpers": "^0.5.23",
+        "@types/lodash": "^4.17.24",
+        "koajax": "^3.3.0",
+        "lodash": "^4.18.1",
         "mobx": ">=6.11",
         "mobx-restful": "^2.1.4",
-        "web-utility": "^4.6.3"
+        "web-utility": "^4.7.2"
     },
     "devDependencies": {
-        "@parcel/config-default": "~2.16.0",
-        "@parcel/packager-ts": "~2.16.0",
-        "@parcel/transformer-typescript-tsc": "~2.16.0",
-        "@parcel/transformer-typescript-types": "~2.16.0",
+        "@parcel/config-default": "~2.16.4",
+        "@parcel/packager-ts": "~2.16.4",
+        "@parcel/transformer-typescript-tsc": "~2.16.4",
+        "@parcel/transformer-typescript-types": "~2.16.4",
+        "@types/node": "^24.13.3",
         "husky": "^9.1.7",
-        "lint-staged": "^16.2.6",
-        "parcel": "~2.16.0",
-        "prettier": "^3.6.2",
-        "typedoc": "^0.28.14",
-        "typedoc-plugin-mdn-links": "^5.0.10",
+        "lint-staged": "^17.0.8",
+        "parcel": "~2.16.4",
+        "prettier": "^3.9.5",
+        "tsx": "^4.23.0",
+        "typedoc": "^0.28.20",
+        "typedoc-plugin-mdn-links": "^5.1.1",
         "typescript": "~5.9.3"
-    },
-    "pnpm": {
-        "onlyBuiltDependencies": [
-            "@parcel/watcher",
-            "@swc/core",
-            "core-js",
-            "lmdb",
-            "msgpackr-extract"
-        ]
     },
     "prettier": {
         "singleQuote": true,
@@ -74,7 +67,7 @@
     },
     "scripts": {
         "prepare": "husky",
-        "test": "lint-staged",
+        "test": "lint-staged  &&  tsx --test test/*.test.ts",
         "build": "rm -rf .parcel-cache/ dist/ docs/  &&  parcel build  &&  typedoc source/",
         "prepublishOnly": "npm test  &&  npm run build"
     }

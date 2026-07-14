@@ -3,6 +3,7 @@ export * from './User';
 export * from './Organization';
 export * from './Repository';
 export * from './Content';
+export * from './Tree';
 export * from './Issue';
 export * from './PullRequest';
 export * from './Discussion';
